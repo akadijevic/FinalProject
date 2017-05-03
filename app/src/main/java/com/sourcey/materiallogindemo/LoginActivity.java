@@ -4,6 +4,8 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.content.Intent;
+import android.support.annotation.NonNull;
 
 import android.content.Intent;
 import android.view.View;
@@ -14,33 +16,59 @@ import android.widget.Toast;
 
 import butterknife.ButterKnife;
 import butterknife.Bind;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.AuthResult;
+
 
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     private static final int REQUEST_SIGNUP = 0;
 
+    /*EditText emailText, passwordText;
+    Button buttonLogin, buttonNewUser;*/
     @Bind(R.id.input_email) EditText _emailText;
     @Bind(R.id.input_password) EditText _passwordText;
     @Bind(R.id.btn_login) Button _loginButton;
     @Bind(R.id.link_signup) TextView _signupLink;
-    
+
+    private FirebaseAuth mAuth;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
-        
-        _loginButton.setOnClickListener(new View.OnClickListener() {
+       /* emailText= (EditText) findViewById(R.id.input_email);
+        passwordText= (EditText) findViewById(R.id.input_password);
+        buttonLogin= (Button) findViewById(R.id.btn_login);
+        buttonNewUser= (Button) findViewById(R.id.btn_signup); */
+        setupCreateButton();
+        setupLoginButton();
 
-            @Override
+        mAuth = FirebaseAuth.getInstance(); //declare object for Firebase
+    }
+        private void setupLoginButton() {
+        _loginButton.setOnClickListener(new View.OnClickListener() {
+            //@Override
+            public void onClick(View v) {
+                Log.d("CIS3334", "Signing in the user");
+                String email = _emailText.getText().toString();
+                String password = _passwordText.getText().toString();
+                signIn(email,password);
+            }
+            /* @Override
             public void onClick(View v) {
                 login();
-            }
+            } */
         });
 
+    }
+    private void setupCreateButton() {
         _signupLink.setOnClickListener(new View.OnClickListener() {
 
-            @Override
+           // @Override
             public void onClick(View v) {
                 // Start the Signup activity
                 Intent intent = new Intent(getApplicationContext(), SignupActivity.class);
@@ -51,7 +79,22 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    public void login() {
+    private void signIn(String email, String password){
+        //sign in the recurrent user with email and password previously created.
+        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() { //add to listener
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (!task.isSuccessful()) { //when failed
+                    Toast.makeText(LoginActivity.this, "SignIn--Authentication failed.",Toast.LENGTH_LONG).show();
+                } else {
+                    //return to MainActivity is login works
+                    finish();
+                }
+            }
+        });
+    }
+
+   /* public void login() {
         Log.d(TAG, "Login");
 
         if (!validate()) {
@@ -133,6 +176,6 @@ public class LoginActivity extends AppCompatActivity {
             _passwordText.setError(null);
         }
 
-        return valid;
+        return valid; */
     }
-}
+
